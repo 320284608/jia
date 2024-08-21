@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>示例</title>
+
+    <script src="https://balkan.app/js/FamilyTree.js"></script>
+    <style>
+        /* 设置树的高度和宽度 */
+        #tree {
+            width: 100%;
+            height: 600px;
+        }
+    </style>
+</head>
+<body>
+
+<h1>示例</h1>
+<div id="tree"></div>
+
+<script>
+    // JavaScript
+
+    FamilyTree.templates.sriniz = Object.assign({}, FamilyTree.templates.base);
+    FamilyTree.templates.sriniz.size = [225, 90];
+    FamilyTree.templates.sriniz.node = '<rect x="0" y="0" height="90" width="225" stroke-width="1" rx="15" ry="15"></rect>';
+
+    FamilyTree.templates.sriniz.defs = `
+        <g transform="matrix(0.05,0,0,0.05,-13 ,-12)" id="heart">
+            <path d="M448,256c0-106-86-192-192-192S64,150,64,256s86,192,192,192S448,362,448,256Z" style="fill:#fff;stroke:red;stroke-miterlimit:10;stroke-width:24px" fill="red"></path>
+            <path d="M256,360a16,16,0,0,1-9-2.78c-39.3-26.68-56.32-45-65.7-56.41-20-24.37-29.58-49.4-29.3-76.5.31-31.06,25.22-56.33,55.53-56.33,20.4,0,35,10.63,44.1,20.41a6,6,0,0,0,8.72,0c9.11-9.78,23.7-20.41,44.1-20.41,30.31,0,55.22,25.27,55.53,56.33.28,27.1-9.31,52.13-29.3,76.5-9.38,11.44-26.4,29.73-65.7,56.41A16,16,0,0,1,256,360Z" fill="red"></path>
+        </g>
+        <g id="sriniz_male_up">
+            <circle cx="15" cy="15" r="10" fill="#fff" stroke="#fff" stroke-width="1"></circle>
+            ${FamilyTree.icon.ft(15, 15, '#039BE5', 7.5, 7.5)}
+        </g>
+        <g id="sriniz_female_up">
+            <circle cx="15" cy="15" r="10" fill="#fff" stroke="#fff" stroke-width="1"></circle>
+            ${FamilyTree.icon.ft(15, 15, '#FF46A3', 7.5, 7.5)}
+        </g>`;
+
+    // Function to create male and female templates
+    function createGenderTemplate(gender, color) {
+        const template = Object.assign({}, FamilyTree.templates.sriniz);
+        template.node = `<rect x="0" y="0" height="{h}" width="{w}" stroke-width="1" fill="${color}" stroke="#aeaeae" rx="15" ry="15"></rect>`;
+        template.field_0 = '<text style="font-size: 16px; font-weight: bold;" fill="#ffffff" x="100" y="30">{val}</text>';
+        template.field_1 = '<text style="font-size: 12px; font-weight: bold;" fill="#ffffff" x="100" y="50">{val}</text>';
+        return template;
+    }
+
+    FamilyTree.templates.sriniz_male = createGenderTemplate('male', '#039BE5');
+    FamilyTree.templates.sriniz_female = createGenderTemplate('female', '#FF46A3');
+
+    const expandIcon = (color) =>
+        `<circle cx="97" cy="-16" r="10" fill="${color}" stroke="#fff" stroke-width="1"><title>Expand</title></circle>
+         <line x1="90" y1="-16" x2="104" y2="-16" stroke-width="1" stroke="#fff"></line>
+         <line x1="97" y1="-23" x2="97" y2="-9" stroke-width="1" stroke="#fff"></line>`;
+
+    FamilyTree.templates.sriniz_male.plus = expandIcon('#039BE5');
+    FamilyTree.templates.sriniz_female.plus = expandIcon('#FF46A3');
+
+    const imgTemplate =
+        `<clipPath id="ulaImg">
+            <rect height="75" width="75" x="7" y="7" stroke-width="1" fill="#FF46A3" stroke="#aeaeae" rx="15" ry="15"></rect>
+        </clipPath>
+        <image x="7" y="7" preserveAspectRatio="xMidYMid slice" clip-path="url(#ulaImg)" xlink:href="{val}" width="75" height="75"></image>`;
+
+    FamilyTree.templates.sriniz_male.img_0 = imgTemplate;
+    FamilyTree.templates.sriniz_female.img_0 = imgTemplate;
+
+    FamilyTree.templates.sriniz_male.up = '<use x="195" y="0" xlink:href="#sriniz_male_up"></use>';
+    FamilyTree.templates.sriniz_female.up = '<use x="195" y="0" xlink:href="#sriniz_female_up"></use>';
+
+    FamilyTree.templates.sriniz.pointer = `
+        <g data-pointer="pointer" transform="matrix(0,0,0,0,80,80)">
+            <g transform="matrix(0.3,0,0,0.3,-17,-17)">
+                <polygon fill="#039BE5" points="53.004,173.004 53.004,66.996 0,120" />
+                <polygon fill="#039BE5" points="186.996,66.996 186.996,173.004 240,120" />
+                <polygon fill="#FF46A3" points="66.996,53.004 173.004,53.004 120,0" />
+                <polygon fill="#FF46A3" points="120,240 173.004,186.996 66.996,186.996" />
+                <circle fill="red" cx="120" cy="120" r="30" />
+            </g>
+        </g>`;
+
+    const familyData = [
+        { id: "1",  pids: ["2"], name: "元周", gender: "male", photo: "2.png" },
+        { id: "2",  pids: ["1"], name: "", gender: "male", photo: "2.png" },
+        { id: "3", mid:"2" , fid:"1" , pids: ["4"], name: "方伦", gender: "male", photo: "2.png" },
+        { id: "4",  pids: ["3"], name: "", gender: "male", photo: "2.png" },
+        { id: "5", mid:"4" , fid:"3" , pids: ["6"], name: "明思", gender: "male", photo: "2.png" },
+        { id: "6",  pids: ["5"], name: "l", gender: "male", photo: "2.png" },
+        { id: "7", mid:"6" , fid:"5" , pids: ["8"], name: "光珠", gender: "male", photo: "2.png" },
+        { id: "8",  pids: ["7"], name: "", gender: "male", photo: "2.png" },
+        { id: "9", mid:"6" , fid:"5" ,pids: ["10"], name: "光林", gender: "male", photo: "2.png" },
+        { id: "10",  pids: ["9"], name: "", gender: "male", photo: "2.png" },
+        { id: "11", mid:"6" , fid:"5" , pids: ["12"], name: "光斗", gender: "male", photo: "2.png" },
+        { id: "12",  pids: ["11"], name: "", gender: "male", photo: "2.png" },
+        { id: "13", mid:"6" , fid:"5" , pids: ["14"], name: "光宣", gender: "male", photo: "2.png" },
+        { id: "14",  pids: ["13"], name: "", gender: "male", photo: "2.png" },
+        { id: "15", mid:"6" , fid:"5" , pids: ["16"], name: "光璜", gender: "male", photo: "2.png" },
+        { id: "16",  pids: ["15"], name: "", gender: "male", photo: "2.png" },
+        { id: "f0",  mid:"12" , fid:"11" , pids: ["f00"], name: "景柏", gender: "male", photo: "2.png" },
+        { id: "f00",  pids: ["f0"], name: "", gender: "male", photo: "2.png" },
+        { id: "f1", mid:"f00" , fid:"f0" , pids: ["f7"], name: "毓良", gender: "male", photo: "2.png" },
+        { id: "f2", mid:"f00" , fid:"f0" , pids: ["f8"], name: "kang", gender: "male", photo: "2.png" },
+        { id: "f3", mid:"f00" , fid:"f0" , pids: ["f9"], name: "毓斌", gender: "male", photo: "2.png" },
+        { id: "f4", mid:"f00" , fid:"f0" , pids: ["f10"], name: "w", gender: "male", photo: "2.png" },
+        { id: "f5", mid:"f00" , fid:"f0" , pids: ["f11"], name: "毓肖", gender: "male", photo: "2.png" },
+        { id: "f6", mid:"f00" , fid:"f0" , pids: ["f12"], name: "l", gender: "male", photo: "2.png" },
+        { id: "f7",  pids: ["f1"], name: "", gender: "male", photo: "2.png" },
+        { id: "f8",  pids: ["f2"], name: "", gender: "male", photo: "2.png" },
+        { id: "f9",  pids: ["f3"], name: "", gender: "male", photo: "2.png" },
+        { id: "f10",  pids: ["f4"], name: "", gender: "male", photo: "2.png" },
+        { id: "f11",  pids: ["f5"], name: "", gender: "male", photo: "2.png" },
+        { id: "f12",  pids: ["f6"], name: "", gender: "male", photo: "2.png" },
+        { id: "f13", mid:"f7" , fid:"f1" , pids: ["f25"], name: "f", gender: "male", photo: "2.png" },
+        { id: "f14", mid:"f7" , fid:"f1" , pids: ["f26"], name: "m", gender: "male", photo: "2.png" },
+        { id: "f15", mid:"f8" , fid:"f2" , pids: ["f27"], name: "wo", gender: "male", photo: "2.png" },
+        { id: "f16", mid:"f8" , fid:"f2" , pids: ["f28"], name: "jiao", gender: "male", photo: "2.png" },
+        { id: "f17", mid:"f9" , fid:"f3" , pids: ["f29"], name: "y", gender: "male", photo: "2.png" },
+        { id: "f18", mid:"f9" , fid:"f3" , pids: ["f30"], name: "f", gender: "male", photo: "2.png" },
+        { id: "f19", mid:"f10" , fid:"f4" , pids: ["f31"], name: "x", gender: "male", photo: "2.png" },
+        { id: "f20", mid:"f10" , fid:"f4" , pids: ["f32"], name: "s", gender: "male", photo: "2.png" },
+        { id: "f21", mid:"f11" , fid:"f5" , pids: ["f33"], name: "f", gender: "male", photo: "2.png" },
+        { id: "f22", mid:"f11" , fid:"f5" , pids: ["f34"], name: "f", gender: "male", photo: "2.png" },
+        { id: "f23", mid:"f12" , fid:"f6" , pids: ["f35"], name: "f", gender: "male", photo: "2.png" },
+        { id: "f24", mid:"f12" , fid:"f6" , pids: ["f36"], name: "l", gender: "male", photo: "2.png" },
+        { id: "f25",  pids: ["f13"], name: "", gender: "male", photo: "2.png" },
+        { id: "f26",  pids: ["f14"], name: "", gender: "male", photo: "2.png" },
+        { id: "f27",  pids: ["f15"], name: "", gender: "male", photo: "2.png" },
+        { id: "f28",  pids: ["f16"], name: "", gender: "male", photo: "2.png" },
+        { id: "f29",  pids: ["f17"], name: "", gender: "male", photo: "2.png" },
+        { id: "f30",  pids: ["f18"], name: "", gender: "male", photo: "2.png" },
+        { id: "f31",  pids: ["f19"], name: "", gender: "male", photo: "2.png" },
+        { id: "f32",  pids: ["f20"], name: "", gender: "male", photo: "2.png" },
+        { id: "f33",  pids: ["f21"], name: "", gender: "male", photo: "2.png" },
+        { id: "f34",  pids: ["f22"], name: "", gender: "male", photo: "2.png" },
+        { id: "f35",  pids: ["f23"], name: "", gender: "male", photo: "2.png" },
+        { id: "f36",  pids: ["f24"], name: "", gender: "male", photo: "2.png" },
+        { id: "f37", mid:"f25" , fid:"f13" ,  name: "jiachi", gender: "male", photo: "2.png" },
+        { id: "f38", mid:"f25" , fid:"f13" ,  name: "", gender: "male", photo: "2.png" },
+        { id: "f39", mid:"f26" , fid:"f14" ,  name: "", gender: "male", photo: "2.png" },
+        { id: "f40", mid:"f26" , fid:"f14" ,  name: "", gender: "male", photo: "2.png" },
+        { id: "f41", mid:"f27" , fid:"f15" ,  name: "", gender: "male", photo: "2.png" },
+        { id: "f42", mid:"f27" , fid:"f15" ,  name: "", gender: "male", photo: "2.png" },
+        { id: "f43", mid:"f28" , fid:"f16" ,  name: "", gender: "male", photo: "2.png" },
+        { id: "f44", mid:"f28" , fid:"f16" ,  name: "", gender: "male", photo: "2.png" },
+        { id: "f45", mid:"f29" , fid:"f17" ,  name: "", gender: "male", photo: "2.png" },
+        { id: "f46", mid:"f29" , fid:"f17" ,  name: "", gender: "male", photo: "2.png" },
+        { id: "f47", mid:"f30" , fid:"f18" ,  name: "", gender: "male", photo: "2.png" },
+        { id: "f48", mid:"f30" , fid:"f18" ,  name: "", gender: "male", photo: "2.png" },
+        { id: "f49", mid:"f31" , fid:"f19" ,  name: "", gender: "male", photo: "2.png" },
+        { id: "g0",  mid:"12" , fid:"11" , pids: ["g00"], name: "景德", gender: "male", photo: "2.png" },
+        { id: "g00",  pids: ["g0"], name: "", gender: "male", photo: "2.png" },
+        { id: "g1", mid:"g00" , fid:"g0" , pids: ["g7"], name: "毓青", gender: "male", photo: "2.png" },
+        { id: "g2", mid:"g00" , fid:"g0" , pids: ["g8"], name: "", gender: "male", photo: "2.png" },
+        { id: "g3", mid:"g00" , fid:"g0" , pids: ["g9"], name: "毓康", gender: "male", photo: "2.png" },
+        { id: "g4", mid:"g00" , fid:"g0" , pids: ["g10"], name: "", gender: "male", photo: "2.png" },
+        { id: "g5", mid:"g00" , fid:"g0" , pids: ["g11"], name: "毓健", gender: "male", photo: "2.png" },
+        { id: "g6", mid:"g00" , fid:"g0" , pids: ["g12"], name: "l", gender: "male", photo: "2.png" },
+        { id: "g7",  pids: ["g1"], name: "", gender: "male", photo: "2.png" },
+        { id: "g8",  pids: ["g2"], name: "", gender: "male", photo: "2.png" },
+        { id: "g9",  pids: ["g3"], name: "", gender: "male", photo: "2.png" },
+        { id: "g10",  pids: ["g4"], name: "", gender: "male", photo: "2.png" },
+        { id: "g11",  pids: ["g5"], name: "", gender: "male", photo: "2.png" },
+        { id: "g12",  pids: ["g6"], name: "", gender: "male", photo: "2.png" },
+        { id: "g13", mid:"g7" , fid:"g1" , pids: ["g25"], name: "c", gender: "male", photo: "2.png" },
+        { id: "g14", mid:"g7" , fid:"g1" , pids: ["g26"], name: "m", gender: "male", photo: "2.png" },
+        { id: "g15", mid:"g8" , fid:"g2" , pids: ["g27"], name: "wo", gender: "male", photo: "2.png" },
+        { id: "g16", mid:"g8" , fid:"g2" , pids: ["g28"], name: "jiao", gender: "male", photo: "2.png" },
+        { id: "g17", mid:"g9" , fid:"g3" , pids: ["g29"], name: "y", gender: "male", photo: "2.png" },
+        { id: "g18", mid:"g9" , fid:"g3" , pids: ["g30"], name: "b", gender: "male", photo: "2.png" },
+        { id: "g19", mid:"g10" , fid:"g4" , pids: ["g31"], name: "x", gender: "male", photo: "2.png" },
+        { id: "g20", mid:"g10" , fid:"g4" , pids: ["g32"], name: "s", gender: "male", photo: "2.png" },
+        { id: "g21", mid:"g11" , fid:"g5" , pids: ["g33"], name: "d", gender: "male", photo: "2.png" },
+        { id: "g22", mid:"g11" , fid:"g5" , pids: ["g34"], name: "f", gender: "male", photo: "2.png" },
+        { id: "g23", mid:"g12" , fid:"g6" , pids: ["g35"], name: "c", gender: "male", photo: "2.png" },
+        { id: "g24", mid:"g12" , fid:"g6" , pids: ["g36"], name: "l", gender: "male", photo: "2.png" },
+        { id: "g25",  pids: ["g13"], name: "", gender: "male", photo: "2.png" },
+        { id: "g26",  pids: ["g14"], name: "", gender: "male", photo: "2.png" },
+        { id: "g27",  pids: ["g15"], name: "", gender: "male", photo: "2.png" },
+        { id: "g28",  pids: ["g16"], name: "", gender: "male", photo: "2.png" },
+        { id: "g29",  pids: ["g17"], name: "", gender: "male", photo: "2.png" },
+        { id: "g30",  pids: ["g18"], name: "", gender: "male", photo: "2.png" },
+        { id: "g31",  pids: ["g19"], name: "", gender: "male", photo: "2.png" },
+        { id: "g32",  pids: ["g20"], name: "", gender: "male", photo: "2.png" },
+        { id: "g33",  pids: ["g21"], name: "", gender: "male", photo: "2.png" },
+        { id: "g34",  pids: ["g22"], name: "", gender: "male", photo: "2.png" },
+        { id: "g35",  pids: ["g23"], name: "", gender: "male", photo: "2.png" },
+        { id: "g36",  pids: ["g24"], name: "", gender: "male", photo: "2.png" },
+        { id: "g37", mid:"g25" , fid:"g13" ,  name: "jiachi", gender: "male", photo: "2.png" },
+        { id: "g38", mid:"g25" , fid:"g13" ,  name: "", gender: "male", photo: "2.png" },
+        { id: "g39", mid:"g26" , fid:"g14" ,  name: "", gender: "male", photo: "2.png" },
+        { id: "g40", mid:"g26" , fid:"g14" ,  name: "", gender: "male", photo: "2.png" },
+        { id: "g41", mid:"g27" , fid:"g15" ,  name: "", gender: "male", photo: "2.png" },
+        { id: "g42", mid:"g27" , fid:"g15" ,  name: "", gender: "male", photo: "2.png" },
+        { id: "g43", mid:"g28" , fid:"g16" ,  name: "", gender: "male", photo: "2.png" },
+        { id: "g44", mid:"g28" , fid:"g16" ,  name: "", gender: "male", photo: "2.png" },
+        { id: "g45", mid:"g29" , fid:"g17" ,  name: "", gender: "male", photo: "2.png" },
+        { id: "g46", mid:"g29" , fid:"g17" ,  name: "", gender: "male", photo: "2.png" },
+        { id: "g47", mid:"g30" , fid:"g18" ,  name: "", gender: "male", photo: "2.png" },
+        { id: "g48", mid:"g30" , fid:"g18" ,  name: "", gender: "male", photo: "2.png" },
+        { id: "g49", mid:"g31" , fid:"g19" ,  name: "", gender: "male", photo: "2.png" },
+        { id: "h0",  mid:"12" , fid:"11" , pids: ["h00"], name: "景仁", gender: "male", photo: "2.png" },
+        { id: "h00",  pids: ["h0"], name: "", gender: "male", photo: "2.png" },
+        { id: "h1", mid:"h00" , fid:"h0" , pids: ["h7"], name: "qing", gender: "male", photo: "2.png" },
+        { id: "h2", mid:"h00" , fid:"h0" , pids: ["h8"], name: "kang", gender: "male", photo: "2.png" },
+        { id: "h3", mid:"h00" , fid:"h0" , pids: ["h9"], name: "j", gender: "male", photo: "2.png" },
+        { id: "h4", mid:"h00" , fid:"h0" , pids: ["h10"], name: "w", gender: "male", photo: "2.png" },
+        { id: "h5", mid:"h00" , fid:"h0" , pids: ["h11"], name: "h", gender: "male", photo: "2.png" },
+        { id: "h6", mid:"h00" , fid:"h0" , pids: ["h12"], name: "l", gender: "male", photo: "2.png" },
+        { id: "h7",  pids: ["h1"], name: "", gender: "male", photo: "2.png" },
+        { id: "h8",  pids: ["h2"], name: "", gender: "male", photo: "2.png" },
+        { id: "h9",  pids: ["h3"], name: "", gender: "male", photo: "2.png" },
+        { id: "h10",  pids: ["h4"], name: "", gender: "male", photo: "2.png" },
+        { id: "h11",  pids: ["h5"], name: "", gender: "male", photo: "2.png" },
+        { id: "h12",  pids: ["h6"], name: "", gender: "male", photo: "2.png" },
+        { id: "h13", mid:"h7" , fid:"h1" , pids: ["h25"], name: "h", gender: "male", photo: "2.png" },
+        { id: "h14", mid:"h7" , fid:"h1" , pids: ["h26"], name: "m", gender: "male", photo: "2.png" },
+        { id: "h15", mid:"h8" , fid:"h2" , pids: ["h27"], name: "wo", gender: "male", photo: "2.png" },
+        { id: "h16", mid:"h8" , fid:"h2" , pids: ["h28"], name: "jiao", gender: "male", photo: "2.png" },
+        { id: "h17", mid:"h9" , fid:"h3" , pids: ["h29"], name: "y", gender: "male", photo: "2.png" },
+        { id: "h18", mid:"h9" , fid:"h3" , pids: ["h30"], name: "h", gender: "male", photo: "2.png" },
+        { id: "h19", mid:"h10" , fid:"h4" , pids: ["h31"], name: "x", gender: "male", photo: "2.png" },
+        { id: "h20", mid:"h10" , fid:"h4" , pids: ["h32"], name: "s", gender: "male", photo: "2.png" },
+        { id: "h21", mid:"h11" , fid:"h5" , pids: ["h33"], name: "h", gender: "male", photo: "2.png" },
+        { id: "h22", mid:"h11" , fid:"h5" , pids: ["h34"], name: "h", gender: "male", photo: "2.png" },
+        { id: "h23", mid:"h12" , fid:"h6" , pids: ["h35"], name: "h", gender: "male", photo: "2.png" },
+        { id: "h24", mid:"h12" , fid:"h6" , pids: ["h36"], name: "l", gender: "male", photo: "2.png" },
+        { id: "h25",  pids: ["h13"], name: "", gender: "male", photo: "2.png" },
+        { id: "h26",  pids: ["h14"], name: "", gender: "male", photo: "2.png" },
+        { id: "h27",  pids: ["h15"], name: "", gender: "male", photo: "2.png" },
+        { id: "h28",  pids: ["h16"], name: "", gender: "male", photo: "2.png" },
+        { id: "h29",  pids: ["h17"], name: "", gender: "male", photo: "2.png" },
+        { id: "h30",  pids: ["h18"], name: "", gender: "male", photo: "2.png" },
+        { id: "h31",  pids: ["h19"], name: "", gender: "male", photo: "2.png" },
+        { id: "h32",  pids: ["h20"], name: "", gender: "male", photo: "2.png" },
+        { id: "h33",  pids: ["h21"], name: "", gender: "male", photo: "2.png" },
+        { id: "h34",  pids: ["h22"], name: "", gender: "male", photo: "2.png" },
+        { id: "h35",  pids: ["h23"], name: "", gender: "male", photo: "2.png" },
+        { id: "h36",  pids: ["h24"], name: "", gender: "male", photo: "2.png" },
+        { id: "h37", mid:"h25" , fid:"h13" ,  name: "jiachi", gender: "male", photo: "2.png" },
+        { id: "h38", mid:"h25" , fid:"h13" ,  name: "", gender: "male", photo: "2.png" },
+        { id: "h39", mid:"h26" , fid:"h14" ,  name: "", gender: "male", photo: "2.png" },
+        { id: "h40", mid:"h26" , fid:"h14" ,  name: "", gender: "male", photo: "2.png" },
+        { id: "h41", mid:"h27" , fid:"h15" ,  name: "", gender: "male", photo: "2.png" },
+        { id: "h42", mid:"h27" , fid:"h15" ,  name: "", gender: "male", photo: "2.png" },
+        { id: "h43", mid:"h28" , fid:"h16" ,  name: "", gender: "male", photo: "2.png" },
+        { id: "h44", mid:"h28" , fid:"h16" ,  name: "", gender: "male", photo: "2.png" },
+        { id: "h45", mid:"h29" , fid:"h17" ,  name: "", gender: "male", photo: "2.png" },
+        { id: "h46", mid:"h29" , fid:"h17" ,  name: "", gender: "male", photo: "2.png" },
+        { id: "h47", mid:"h30" , fid:"h18" ,  name: "", gender: "male", photo: "2.png" },
+        { id: "h48", mid:"h30" , fid:"h18" ,  name: "", gender: "male", photo: "2.png" },
+        { id: "h49", mid:"h31" , fid:"h19" ,  name: "", gender: "male", photo: "2.png" },
+        // 省略其他节点以保持简洁
+    ];
+
+    const family = new FamilyTree(document.getElementById("tree"), {
+        mouseScrool: FamilyTree.action.ctrlZoom,
+        template: 'sriniz',
+        enableSearch: true,
+        nodeMouseClick: FamilyTree.action.none,
+        scaleInitial: FamilyTree.match.boundary,
+        scaleMax: 1.5,
+        nodeBinding: {
+            field_0: "name",
+            img_0: "photo"
+        },
+        toolbar: {
+            fullScreen: true,
+            zoom: true,
+            fit: true,
+            expandAll: true,
+        },
+        nodes: familyData
+    });
+
+    family.on('render-link', function (sender, args) {
+        if (args.cnode.ppid != undefined)
+            args.html += `<use data-ctrl-ec-id="${args.node.id}" xlink:href="#heart" x="${args.p.xa}" y="${args.p.ya}"/>`;
+        if (args.cnode.isPartner && args.node.partnerSeparation == 30)
+            args.html += `<use data-ctrl-ec-id="${args.node.id}" xlink:href="#heart" x="${args.p.xb}" y="${args.p.yb}"/>`;
+    });
+</script>
+
+</body>
+</html>
